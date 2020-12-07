@@ -20,6 +20,17 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from . import imagenet_models as models
 
+from prefetch_generator import BackgroundGenerator
+class DataLoaderX(DataLoader):
+    """dataloader with prefetch
+    Args:
+        DataLoader ([type]): [description]
+    Returns:
+        [type]: [description]
+    """
+    def __iter__(self):
+        return BackgroundGenerator(super().__iter__())
+
 def make_loaders(workers, batch_size, transforms, data_path, data_aug=True,
                 custom_class=None, dataset="", label_mapping=None, subset=None,
                 subset_type='rand', subset_start=0, val_batch_size=None,
@@ -86,10 +97,10 @@ def make_loaders(workers, batch_size, transforms, data_path, data_aug=True,
         train_set = Subset(train_set, subset)
 
     if not only_val:
-        train_loader = DataLoader(train_set, batch_size=batch_size, 
+        train_loader = DataLoaderX(train_set, batch_size=batch_size, 
             shuffle=shuffle_train, num_workers=workers, pin_memory=True)
 
-    test_loader = DataLoader(test_set, batch_size=val_batch_size, 
+    test_loader = DataLoaderX(test_set, batch_size=val_batch_size, 
             shuffle=shuffle_val, num_workers=workers, pin_memory=True)
 
     if only_val:
@@ -251,5 +262,5 @@ def TransformedLoader(loader, func, transforms, workers=None,
             new_targs.append(new_targ.cpu())
 
     dataset = folder.TensorDataset(ch.cat(new_ims, 0), ch.cat(new_targs, 0), transform=transforms)
-    return ch.utils.data.DataLoader(dataset, num_workers=workers, 
+    return ch.utils.data.DataLoaderX(dataset, num_workers=workers, 
                         batch_size=batch_size, shuffle=shuffle)

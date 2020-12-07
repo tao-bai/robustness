@@ -366,6 +366,49 @@ class CIFAR(DataSet):
             raise ValueError('CIFAR does not support pytorch_pretrained=True')
         return cifar_models.__dict__[arch](num_classes=self.num_classes)
 
+class CIFARv2(DataSet):
+    """
+    CIFAR-10 dataset [Kri09]_.
+
+    A dataset with 50k training images and 10k testing images, with the
+    following classes:
+
+    * Airplane
+    * Automobile
+    * Bird
+    * Cat
+    * Deer
+    * Dog
+    * Frog
+    * Horse
+    * Ship
+    * Truck
+
+    .. [Kri09] Krizhevsky, A (2009). Learning Multiple Layers of Features
+        from Tiny Images. Technical Report.
+    """
+    def __init__(self, data_path='/tmp/', **kwargs):
+        """
+        """
+        ds_kwargs = {
+            'num_classes': 10,
+            'mean': ch.tensor([0.5, 0.5, 0.5]),
+            'std': ch.tensor([0.5, 0.5, 0.5]),
+            'custom_class': datasets.CIFAR10,
+            'label_mapping': None, 
+            'transform_train': da.TRAIN_TRANSFORMS_DEFAULT(32),
+            'transform_test': da.TEST_TRANSFORMS_DEFAULT(32)
+        }
+        ds_kwargs = self.override_args(ds_kwargs, kwargs)
+        super(CIFARv2, self).__init__('cifarv2', data_path, **ds_kwargs)
+
+    def get_model(self, arch, pretrained):
+        """
+        """
+        if pretrained:
+            raise ValueError('CIFAR does not support pytorch_pretrained=True')
+        return cifar_models.__dict__[arch](num_classes=self.num_classes)
+
 class CINIC(DataSet):
     """
     CINIC-10 dataset [DCA+18]_.
@@ -491,6 +534,7 @@ DATASETS = {
     'restricted_imagenet': RestrictedImageNet,
     'custom_imagenet': CustomImageNet,
     'cifar': CIFAR,
+    'cifarv2': CIFARv2,
     'cinic': CINIC,
     'a2b': A2B,
     'places365': Places365,
